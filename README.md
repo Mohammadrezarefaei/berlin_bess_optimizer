@@ -21,7 +21,15 @@ A geospatial optimization and capacity sizing framework for grid-scale Battery E
 | ![Dashboard Table](assets/dashboard_table.png) | ![Dashboard Map](assets/dashboard_map.png) |
 
 ---
+## 📦 Tech Stack & Features Comparison
 
+| Component | Technology | Primary Function |
+| :--- | :--- | :--- |
+| **GIS & Spatial** | GeoPandas, Shapely | Berlin district boundaries & spatial modeling |
+| **Optimization** | PuLP (Linear Programming) | Siting, sizing ($MW/MWh$), & arbitrage maximization |
+| **Dashboard** | Streamlit, Streamlit-Folium | Web UI, interactive maps, & parameter sliders |
+| **Data Processing**| Pandas, NumPy | Market spread calculations & results aggregation |
+---
 ## 📂 Project Structure
 
 ```text
