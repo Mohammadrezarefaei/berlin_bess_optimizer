@@ -1,3 +1,4 @@
+Markdown
 # Berlin BESS Siting & Optimization Dashboard
 
 A geospatial optimization and capacity sizing framework for grid-scale Battery Energy Storage Systems (BESS) across Berlin districts. This project combines spatial data analysis, linear programming optimization, and an interactive web dashboard to evaluate grid congestion risks and maximize arbitrage profitability.
@@ -10,12 +11,14 @@ A geospatial optimization and capacity sizing framework for grid-scale Battery E
 * **Linear Optimization Engine (`PuLP`):** Solves linear programming models to determine optimal power ($MW$) and energy ($MWh$) sizing for BESS units while maximizing annual arbitrage revenue.
 * **Interactive Dashboard (`Streamlit` & `Folium`):** Provides a dynamic web interface featuring real-time parameter tuning (price spreads and annual cycles), optimization result tables, and an interactive map of Berlin.
 
-🛠️ Installation & Setup
-Clone the repository:
+---
 
-Bash
-git clone [https://github.com/your-username/berlin_bess_optimizer.git](https://github.com/your-username/berlin_bess_optimizer.git)
-cd berlin_bess_optimizer
+## 🛠️ Installation & Setup
+
+1. Clone the repository:
+   ```bash
+   git clone [https://github.com/your-username/berlin_bess_optimizer.git](https://github.com/your-username/berlin_bess_optimizer.git)
+   cd berlin_bess_optimizer
 Install the required dependencies:
 
 Bash
@@ -37,11 +40,9 @@ GeoPandas & Shapely (Spatial Data Processing)
 PuLP (Linear Optimization)
 
 Pandas & NumPy (Data Manipulation)
----
 
-## 📂 Project Structure
-
-```text
+📂 Project Structure
+Plaintext
 berlin_bess_optimizer/
 │
 ├── data/                    # Shapefiles and market data directory
