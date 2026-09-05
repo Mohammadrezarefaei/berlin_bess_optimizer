@@ -1,31 +1,42 @@
 import geopandas as gpd
-from shapely.geometry import Polygon
 import pandas as pd
+import shapely.geometry as sg
 
-def get_berlin_bess_grid_data():
+def load_berlin_districts():
     """
-    تولید دیتافریم مکانی (GeoDataFrame) برای محله‌های کلیدی برلین 
-    همراه با اطلاعات بار شبکه و پتانسیل BESS
+    Loads or generates Berlin districts geospatial data with congestion and spatial weights
+    for BESS optimization.
     """
+    # Sample data representing Berlin districts/neighborhoods with spatial & grid parameters
     data = {
-        "neighborhood": ["Charlottenburg", "Mitte", "Kreuzberg", "Prenzlauer Berg", "Spandau"],
-        "district": ["Charlottenburg-Wilmersdorf", "Mitte", "Friedrichshain-Kreuzberg", "Pankow", "Spandau"],
-        "geometry": [
-            Polygon([[13.28, 52.51], [13.33, 52.51], [13.33, 52.55], [13.28, 52.55]]),
-            Polygon([[13.38, 52.51], [13.42, 52.51], [13.42, 52.54], [13.38, 52.54]]),
-            Polygon([[13.39, 52.48], [13.43, 52.48], [13.43, 52.51], [13.39, 52.51]]),
-            Polygon([[13.40, 52.54], [13.45, 52.54], [13.45, 52.57], [13.40, 52.57]]),
-            Polygon([[13.19, 52.53], [13.25, 52.53], [13.25, 52.57], [13.19, 52.57]])
+        'neighborhood': [
+            'Mitte', 'Charlottenburg', 'Kreuzberg', 'Prenzlauer Berg', 
+            'Friedrichshain', 'Tempelhof', 'Spandau', 'Pankow', 'Neukölln'
         ],
-        "grid_congestion_risk": ["High", "Medium", "Low", "Medium", "High"],
-        "avg_load_mw": [45.5, 60.2, 30.1, 28.4, 50.0],
-        "bess_potential_mw": [20.0, 15.0, 10.0, 12.0, 25.0]
+        'district': [
+            'Mitte', 'Charlottenburg-Wilmersdorf', 'Friedrichshain-Kreuzberg', 'Pankow', 
+            'Friedrichshain-Kreuzberg', 'Tempelhof-Schöneberg', 'Spandau', 'Pankow', 'Neukölln'
+        ],
+        'congestion_weight': [1.35, 1.25, 1.40, 1.15, 1.30, 1.20, 1.10, 1.12, 1.28],
+        'congestion_risk': ['High', 'Medium', 'High', 'Low', 'High', 'Medium', 'Low', 'Low', 'Medium']
     }
     
-    gdf = gpd.GeoDataFrame(data, crs="EPSG:4326")
-    return gdf
-
-if __name__ == "__main__":
-    df = get_berlin_bess_grid_data()
-    print(df.head())
+    # Creating a dummy GeoDataFrame with bounding geometries for Berlin
+    df = pd.DataFrame(data)
     
+    # Generate approximate polygon geometries for demonstration / spatial handling
+    base_lon, base_lat = 13.405, 52.52
+    geometries = []
+    for i in range(len(df)):
+        lon_offset = (i % 3 - 1) * 0.04
+        lat_offset = ((i // 3) % 3 - 1) * 0.03
+        poly = sg.Polygon([
+            (base_lon + lon_offset, base_lat + lat_offset),
+            (base_lon + lon_offset + 0.03, base_lat + lat_offset),
+            (base_lon + lon_offset + 0.03, base_lat + lat_offset + 0.025),
+            (base_lon + lon_offset, base_lat + lat_offset + 0.025)
+        ])
+        geometries.append(poly)
+        
+    gdf = gpd.GeoDataFrame(df, geometry=geometries, crs="EPSG:4326")
+    return gdf
