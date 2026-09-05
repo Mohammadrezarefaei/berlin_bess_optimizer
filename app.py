@@ -1,58 +1,90 @@
 import streamlit as st
-import folium
+import pandas as pd
+from gis.loader import load_berlin_districts
+from optimization.optimizer import optimize_bess
 from streamlit_folium import st_folium
-from gis.loader import get_berlin_bess_grid_data
-from optimization.optimizer import optimize_berlin_bess
+import folium
 
-# Page configuration
-st.set_page_config(page_title="Berlin BESS Optimizer", layout="wide")
+# Page Configuration
+st.set_page_config(
+    page_title="Berlin BESS Siting & Optimization Dashboard",
+    page_icon="⚡",
+    layout="wide"
+)
 
+# Dashboard Title & Description
 st.title("⚡ Berlin BESS Location & Optimization Dashboard")
-st.markdown("Geospatial optimization and capacity sizing framework for grid-scale Battery Energy Storage Systems across Berlin districts.")
+st.markdown("Geospatial optimization and capacity sizing framework for grid-scale Battery Energy Storage Systems (BESS) across Berlin districts.")
 
-# Load data and run optimization
-gdf = get_berlin_bess_grid_data()
-
-# Sidebar for market and battery parameters
+# Sidebar Parameters for Market & Stress Testing
 st.sidebar.header("Market & Battery Parameters")
-price_spread = st.sidebar.slider("Average Price Spread (EUR/MWh)", min_value=40.0, max_value=150.0, value=80.0, step=5.0)
-cycles = st.sidebar.number_input("Annual Cycles", min_value=100, max_value=700, value=365)
 
-# Re-run optimization with updated sidebar parameters
-df_results = optimize_berlin_bess(gdf, price_spread_eur_per_mwh=price_spread, annual_cycles=cycles)
+price_spread = st.sidebar.slider(
+    "Average Price Spread (EUR/MWh)",
+    min_value=30.0,
+    max_value=150.0,
+    value=90.0,
+    step=5.0,
+    help="Average daily wholesale electricity price spread."
+)
 
-# Display results table in the dashboard
+annual_cycles = st.sidebar.number_input(
+    "Annual Cycles",
+    min_value=100,
+    max_value=700,
+    value=365,
+    step=10,
+    help="Number of full equivalent charge-discharge cycles per year."
+)
+
+# --- NEW: Price Scenario / Stress Testing Multiplier ---
+st.sidebar.subheader("📉 Market Stress Testing")
+price_multiplier = st.sidebar.slider(
+    "Price Scenario Multiplier",
+    min_value=0.5,
+    max_value=2.0,
+    value=1.0,
+    step=0.1,
+    help="Simulate bearish (0.5x) or bullish (2.0x) market price conditions."
+)
+
+# Load GIS data for Berlin districts
+df_districts = load_berlin_districts()
+
+# Run Optimization with Price Sensitivity Parameter
+results = optimize_bess(df_districts, price_spread=price_spread, annual_cycles=annual_cycles, price_multiplier=price_multiplier)
+df_results = pd.DataFrame(results)
+
+# Display Results Section
 st.subheader("📊 Optimization & Profitability Results by Neighborhood")
+if price_multiplier != 1.0:
+    st.info(f"ℹ️ Active Market Scenario Multiplier: **{price_multiplier}x** (Adjusted via sidebar stress testing)")
+
 st.dataframe(df_results, use_container_width=True)
 
-# Interactive Berlin map section using Folium
+# Interactive Map Section
 st.subheader("🗺️ Interactive District Map & BESS Potential in Berlin")
 
-# Center coordinates for Berlin
-m = folium.Map(location=[52.52, 13.40], zoom_start=11)
+m = folium.Map(location=[52.52, 13.405], zoom_start=11, tiles="CartoDB positron")
 
-# Add circles to the map for each neighborhood based on optimal BESS size
-for idx, row in gdf.iterrows():
-    res_row = df_results[df_results["neighborhood"] == row["neighborhood"]].iloc[0]
+# Add markers/circles based on optimal power sizing
+for idx, row in df_results.iterrows():
+    # Estimating coordinates per district roughly for visualization
+    # In full production, this maps directly to district polygon centroids
+    lat_offset = (idx % 3 - 1) * 0.03
+    lon_offset = ((idx // 3) % 3 - 1) * 0.04
+    base_lat, base_lon = 52.52 + lat_offset, 13.405 + lon_offset
     
-    popup_text = f"""
-    <b>Neighborhood:</b> {row['neighborhood']}<br>
-    <b>District:</b> {row['district']}<br>
-    <b>Congestion Risk:</b> {row['grid_congestion_risk']}<br>
-    <b>Optimal BESS:</b> {res_row['optimal_bess_mw']} MW / {res_row['optimal_bess_mwh']} MWh<br>
-    <b>Est. Profit:</b> €{res_row['estimated_annual_profit_eur']:,.2f}
-    """
+    radius_size = float(row['optimal_bess_mw']) * 400
     
-    centroid = row['geometry'].centroid
     folium.CircleMarker(
-        location=[centroid.y, centroid.x],
-        radius=float(res_row['optimal_bess_mw']) * 0.8,
-        popup=popup_text,
-        tooltip=row['neighborhood'],
+        location=[base_lat, base_lon],
+        radius=max(6, float(row['optimal_bess_mw']) / 1.5),
         color="crimson",
         fill=True,
-        fill_color="crimson"
+        fill_color="crimson",
+        fill_opacity=0.7,
+        popup=f"<b>{row['neighborhood']}</b><br>Optimal Power: {row['optimal_bess_mw']} MW<br>Energy: {row['optimal_bess_mwh']} MWh<br>Est. Profit: €{row['estimated_annual_profit_eur']:,}"
     ).add_to(m)
 
-# Render the map in Streamlit
 st_folium(m, width=1200, height=500)
