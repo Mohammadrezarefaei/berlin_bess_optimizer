@@ -1,7 +1,7 @@
 cat << 'EOF' > app.py
 import streamlit as st
 import pandas as pd
-import pydeck as pdk
+import plotly.express as px
 from gis.loader import load_berlin_districts
 from optimization.optimizer import optimize_bess
 from optimization.forecaster import predict_market_multiplier
@@ -30,43 +30,53 @@ st.dataframe(df_results, use_container_width=True)
 
 st.download_button("📥 Download CSV", df_results.to_csv(index=False).encode('utf-8'), "report.csv", "text/csv")
 
-st.subheader("🗺️ Interactive District Map (Hover over circles)")
+st.subheader("🗺️ Geospatial Optimization & Profit Distribution (Berlin Districts)")
 
 map_data = []
 for idx, row in df_results.iterrows():
     lat_offset = (idx % 3 - 1) * 0.03
     lon_offset = ((idx // 3) % 3 - 1) * 0.04
     map_data.append({
-        'lat': 52.52 + lat_offset,
-        'lon': 13.405 + lon_offset,
-        'neighborhood': row['neighborhood'],
-        'optimal_bess_mw': row['optimal_bess_mw'],
-        'net_annual_profit_eur': row['net_annual_profit_eur']
+        'Latitude': 52.52 + lat_offset,
+        'Longitude': 13.405 + lon_offset,
+        'Neighborhood': row['neighborhood'],
+        'District': row['district'],
+        'Optimal_MW': row['optimal_bess_mw'],
+        'Optimal_MWh': row['optimal_bess_mwh'],
+        'Net_Profit_EUR': row['net_annual_profit_eur'],
+        'Congestion_Risk': row['congestion_risk']
     })
 
 df_map = pd.DataFrame(map_data)
 
-layer = pdk.Layer(
-    "ScatterplotLayer",
-    data=df_map,
-    get_position=["lon", "lat"],
-    get_radius=1200,
-    get_fill_color=[0, 150, 150, 220],
-    pickable=True,
-    auto_highlight=True,
+# Interactive Plotly Scatter Mapbox / Scatter geo implementation with instant hover tooltips
+fig = px.scatter(
+    df_map,
+    x='Longitude',
+    y='Latitude',
+    size='Optimal_MW',
+    color='Net_Profit_EUR',
+    hover_name='Neighborhood',
+    hover_data={
+        'Latitude': False,
+        'Longitude': False,
+        'District': True,
+        'Optimal_MW': True,
+        'Optimal_MWh': True,
+        'Net_Profit_EUR': True,
+        'Congestion_Risk': True
+    },
+    color_continuous_scale='Teal',
+    size_max=35,
+    title="Berlin Districts BESS Siting & Profit Potential"
 )
 
-view_state = pdk.ViewState(latitude=52.52, longitude=13.405, zoom=10, pitch=0)
-
-r = pdk.Deck(
-    layers=[layer],
-    initial_view_state=view_state,
-    map_style="light",
-    tooltip={
-        "html": "<b>Neighborhood:</b> {neighborhood}<br/><b>Capacity:</b> {optimal_bess_mw} MW<br/><b>Net Profit:</b> €{net_annual_profit_eur:,}",
-        "style": {"backgroundColor": "steelblue", "color": "white"}
-    }
+fig.update_layout(
+    xaxis_title="Longitude",
+    yaxis_title="Latitude",
+    template="plotly_dark",
+    height=550
 )
 
-st.pydeck_chart(r)
+st.plotly_chart(fig, use_container_width=True)
 EOF
