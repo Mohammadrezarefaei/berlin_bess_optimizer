@@ -3,10 +3,6 @@ import pandas as pd
 import shapely.geometry as sg
 
 def load_berlin_districts():
-    """
-    Loads or generates Berlin districts geospatial data with congestion and spatial weights
-    for BESS optimization.
-    """
     data = {
         'neighborhood': [
             'Mitte', 'Charlottenburg', 'Kreuzberg', 'Prenzlauer Berg', 
