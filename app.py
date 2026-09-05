@@ -25,12 +25,23 @@ df_districts = load_berlin_districts()
 results = optimize_bess(df_districts, price_spread, annual_cycles, price_multiplier, deg_cost_rate)
 df_results = pd.DataFrame(results)
 
+total_profit = df_results['net_annual_profit_eur'].sum()
+total_mw = df_results['optimal_bess_mw'].sum()
+total_mwh = df_results['optimal_bess_mwh'].sum()
+
+col1, col2, col3 = st.columns(3)
+col1.metric("💰 Total Net Annual Profit", f"€{total_profit:,.0f}")
+col2.metric("⚡ Total Optimal Power", f"{total_mw:,.1f} MW")
+col3.metric("🔋 Total Storage Capacity", f"{total_mwh:,.1f} MWh")
+
+st.divider()
+
 st.subheader("📊 Optimization Results")
 st.dataframe(df_results, use_container_width=True)
 
-st.download_button("📥 Download CSV", df_results.to_csv(index=False).encode('utf-8'), "report.csv", "text/csv")
+st.download_button("📥 Download Optimization Report (CSV)", df_results.to_csv(index=False).encode('utf-8'), "berlin_bess_report.csv", "text/csv")
 
-st.subheader("🗺️ Geospatial Optimization & Profit Distribution (Berlin Districts)")
+st.subheader("🗺️ Interactive Geospatial Map of Berlin Districts")
 
 map_data = []
 for idx, row in df_results.iterrows():
@@ -49,11 +60,11 @@ for idx, row in df_results.iterrows():
 
 df_map = pd.DataFrame(map_data)
 
-# Interactive Plotly Scatter Mapbox / Scatter geo implementation with instant hover tooltips
-fig = px.scatter(
+# Using Plotly Scatter Mapbox with OpenStreetMap (No API key required)
+fig = px.scatter_mapbox(
     df_map,
-    x='Longitude',
-    y='Latitude',
+    lat='Latitude',
+    lon='Longitude',
     size='Optimal_MW',
     color='Net_Profit_EUR',
     hover_name='Neighborhood',
@@ -67,14 +78,14 @@ fig = px.scatter(
         'Congestion_Risk': True
     },
     color_continuous_scale='Teal',
-    size_max=35,
-    title="Berlin Districts BESS Siting & Profit Potential"
+    size_max=30,
+    zoom=10.5,
+    center={'lat': 52.52, 'lon': 13.405},
+    mapbox_style="open-street-map"
 )
 
 fig.update_layout(
-    xaxis_title="Longitude",
-    yaxis_title="Latitude",
-    template="plotly_dark",
+    margin={'r':0, 't':0, 'l':0, 'b':0},
     height=550
 )
 
