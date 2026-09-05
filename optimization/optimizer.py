@@ -11,7 +11,8 @@ def optimize_bess(df_districts, price_spread=90.0, annual_cycles=365, price_mult
         district_name = row['neighborhood']
         congestion_factor = row.get('congestion_weight', 1.2)
         
-        prob = pulp.Problem(f"BESS_Optimization_{district_name}", pulp.LpMaximize)
+        # Corrected from pulp.Problem to pulp.LpProblem
+        prob = pulp.LpProblem(f"BESS_Optimization_{district_name}", pulp.LpMaximize)
         
         power_mw = pulp.LpVariable(f"Power_{district_name}", lowBound=1, upBound=50, cat='Continuous')
         energy_mwh = pulp.LpVariable(f"Energy_{district_name}", lowBound=2, upBound=100, cat='Continuous')
@@ -30,15 +31,15 @@ def optimize_bess(df_districts, price_spread=90.0, annual_cycles=365, price_mult
         
         opt_power = pulp.value(power_mw)
         opt_energy = pulp.value(energy_mwh)
-        estimated_gross = pulp.value(annual_revenue) * 1000
-        estimated_deg_cost = pulp.value(annual_degradation_cost) * 1000
-        estimated_net_profit = pulp.value(net_profit) * 1000
+        estimated_gross = pulp.value(annual_revenue) * 1000 if pulp.value(annual_revenue) else 0
+        estimated_deg_cost = pulp.value(annual_degradation_cost) * 1000 if pulp.value(annual_degradation_cost) else 0
+        estimated_net_profit = pulp.value(net_profit) * 1000 if pulp.value(net_profit) else 0
         
         results.append({
             'neighborhood': district_name,
             'district': row.get('district', 'Berlin'),
-            'optimal_bess_mw': round(opt_power, 2),
-            'optimal_bess_mwh': round(opt_energy, 2),
+            'optimal_bess_mw': round(opt_power, 2) if opt_power else 0.0,
+            'optimal_bess_mwh': round(opt_energy, 2) if opt_energy else 0.0,
             'gross_revenue_eur': int(estimated_gross),
             'degradation_cost_eur': int(estimated_deg_cost),
             'net_annual_profit_eur': int(estimated_net_profit),
