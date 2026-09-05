@@ -40,9 +40,11 @@ GeoPandas & Shapely (Spatial Data Processing)
 PuLP (Linear Optimization)
 
 Pandas & NumPy (Data Manipulation)
+---
 
-📂 Project Structure
-Plaintext
+## 📂 Project Structure
+
+```text
 berlin_bess_optimizer/
 │
 ├── data/                    # Shapefiles and market data directory
