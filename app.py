@@ -4,8 +4,6 @@ import pandas as pd
 from gis.loader import load_berlin_districts
 from optimization.optimizer import optimize_bess
 from optimization.forecaster import predict_market_multiplier
-from streamlit_folium import st_folium
-import folium
 
 st.set_page_config(
     page_title="Berlin BESS Siting & Optimization Dashboard",
@@ -87,28 +85,19 @@ st.download_button(
 
 st.subheader("🗺️ Interactive District Map & Net Profit Potential in Berlin")
 
-# Using standard OpenStreetMap via explicit tiles URL endpoint to prevent API key prompts
-m = folium.Map(
-    location=[52.52, 13.405], 
-    zoom_start=11, 
-    tiles="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    attr="© OpenStreetMap contributors"
-)
-
+# Adding mock latitude and longitude columns for native Streamlit map rendering over Berlin coordinates
+map_data = []
 for idx, row in df_results.iterrows():
     lat_offset = (idx % 3 - 1) * 0.03
     lon_offset = ((idx // 3) % 3 - 1) * 0.04
     base_lat, base_lon = 52.52 + lat_offset, 13.405 + lon_offset
-    
-    folium.CircleMarker(
-        location=[base_lat, base_lon],
-        radius=max(6, float(row['optimal_bess_mw']) / 1.5),
-        color="teal",
-        fill=True,
-        fill_color="teal",
-        fill_opacity=0.7,
-        popup=f"<b>{row['neighborhood']}</b><br>Power: {row['optimal_bess_mw']} MW<br>Energy: {row['optimal_bess_mwh']} MWh<br>Net Profit: €{row['net_annual_profit_eur']:,}"
-    ).add_to(m)
+    map_data.append({
+        'lat': base_lat,
+        'lon': base_lon,
+        'neighborhood': row['neighborhood'],
+        'net_annual_profit_eur': row['net_annual_profit_eur']
+    })
 
-st_folium(m, width=1200, height=500)
+df_map = pd.DataFrame(map_data)
+st.map(df_map, latitude='lat', longitude='lon', size='net_annual_profit_eur', zoom=10)
 EOF
