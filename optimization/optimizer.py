@@ -1,55 +1,47 @@
 import pulp
-import pandas as pd
 
-def optimize_berlin_bess(gdf, price_spread_eur_per_mwh=80.0, annual_cycles=365):
+def optimize_bess(df_districts, price_spread=90.0, annual_cycles=365, price_multiplier=1.0):
     """
-    مدل بهینه‌سازی خطی با PuLP برای تعیین سایز بهینه و سودآوری BESS در محله‌های برلین
+    Optimizes BESS power (MW) and energy (MWh) for Berlin districts using PuLP,
+    incorporating a price sensitivity multiplier for stress testing.
     """
-    # ایجاد مسئله بهینه‌سازی (حداکثرسازی سود)
-    prob = pulp.LpProblem("Berlin_BESS_Optimization", pulp.LpMaximize)
-    
-    # متغیرهای تصمیم: ظرفیت توان باتری (MW) برای هر محله
-    bess_vars = {}
-    for idx, row in gdf.iterrows():
-        # متغیر ظرفیت بین 0 تا پتانسیل حداکثر هر محله
-        bess_vars[idx] = pulp.LpVariable(f"bess_mw_{row['neighborhood']}", lowBound=0, upBound=row['bess_potential_mw'], cat='Continuous')
-    
-    # تابع هدف: حداکثر کردن سود سالانه آربیتراژ (فرضیه: درآمد بر اساس اسپرید قیمت و تعداد چرخه)
-    # فرض بر این است که هر مگاوات ظرفیت، انرژی معینی را با احتساب راندمان جابجا می‌کند.
-    profit_terms = []
-    for idx, row in gdf.iterrows():
-        # فرض 2 ساعت ذخیره‌سازی (Duration = 2h) برای هر MW ظرفیت توان
-        annual_throughput_mwh = bess_vars[idx] * 2 * annual_cycles * 0.85 # با احتساب راندمان RTE
-        revenue = annual_throughput_mwh * price_spread_eur_per_mwh
-        profit_terms.append(revenue)
-        
-    prob += pulp.lpSum(profit_terms), "Total_Annual_Profit"
-    
-    # محدودیت بودجه کل یا ظرفیت تج تج تجمیعی شبکه برلین (مثلاً حداکثر 60 مگاوات در کل شهر)
-    max_total_capacity = 60.0
-    prob += pulp.lpSum([bess_vars[idx] for idx in gdf.index]) <= max_total_capacity, "Total_Capacity_Limit"
-    
-    # حل مسئله
-    prob.solve(pulp.PULP_CBC_CMD(msg=0))
-    
-    # استخراج نتایج
     results = []
-    for idx, row in gdf.iterrows():
-        allocated_mw = pulp.value(bess_vars[idx])
-        annual_profit = allocated_mw * 2 * annual_cycles * 0.85 * price_spread_eur_per_mwh
+    
+    for idx, row in df_districts.iterrows():
+        district_name = row['neighborhood']
+        congestion_factor = row.get('congestion_weight', 1.2)
+        
+        # Initialize PuLP Linear Programming problem
+        prob = pulp.Problem(f"BESS_Optimization_{district_name}", pulp.LpMaximize)
+        
+        # Decision variables
+        power_mw = pulp.LpVariable(f"Power_{district_name}", lowBound=1, upBound=50, cat='Continuous')
+        energy_mwh = pulp.LpVariable(f"Energy_{district_name}", lowBound=2, upBound=100, cat='Continuous')
+        
+        # Constraints: Energy-to-Power ratio (e.g., 2-hour storage duration minimum)
+        prob += energy_mwh >= 2 * power_mw
+        prob += energy_mwh <= 4 * power_mw
+        
+        # Objective Function: Maximize Annual Arbitrage Revenue adjusted by Price Multiplier & Congestion
+        adjusted_spread = price_spread * price_multiplier
+        annual_revenue = power_mw * adjusted_spread * annual_cycles * congestion_factor * 0.001 # scaled
+        
+        prob += annual_revenue
+        
+        # Solve the problem
+        prob.solve(pulp.PULP_CBC_CMD(msg=False))
+        
+        opt_power = pulp.value(power_mw)
+        opt_energy = pulp.value(energy_mwh)
+        estimated_profit = pulp.value(annual_revenue) * 1000 # convert back to EUR scale
+        
         results.append({
-            "neighborhood": row["neighborhood"],
-            "district": row["district"],
-            "optimal_bess_mw": round(allocated_mw, 2),
-            "optimal_bess_mwh": round(allocated_mw * 2, 2),
-            "estimated_annual_profit_eur": round(annual_profit, 2),
-            "congestion_risk": row["grid_congestion_risk"]
+            'neighborhood': district_name,
+            'district': row.get('district', 'Berlin'),
+            'optimal_bess_mw': round(opt_power, 2),
+            'optimal_bess_mwh': round(opt_energy, 2),
+            'estimated_annual_profit_eur': int(estimated_profit),
+            'congestion_risk': row.get('congestion_risk', 'Medium')
         })
         
-    return pd.DataFrame(results)
-
-if __name__ == "__main__":
-    from gis.loader import get_berlin_bess_grid_data
-    gdf = get_berlin_bess_grid_data()
-    df_res = optimize_berlin_bess(gdf)
-    print(df_res)
+    return results
