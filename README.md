@@ -22,12 +22,6 @@ A geospatial optimization and capacity sizing framework for grid-scale Battery E
 
 ---
 
-## 🛠️ Installation & Setup
-
-1. Clone the repository:
-   ```bash
-   git clone [https://github.com/Mohammadrezarefaei/berlin_bess_optimizer.git](https://github.com/Mohammadrezarefaei/berlin_bess_optimizer.git)
-   cd berlin_bess_optimizer
 Install the required dependencies:Bashpip install -r requirements.txt
 🖥️ Running the DashboardLaunch the Streamlit web application locally:Bashpython3 -m streamlit run app.py
 Open the provided local URL in your browser to interact with the dashboard, adjust market parameters via the sidebar, and analyze optimal BESS allocations across Berlin.
