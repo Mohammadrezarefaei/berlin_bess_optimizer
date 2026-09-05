@@ -21,23 +21,6 @@ A geospatial optimization and capacity sizing framework for grid-scale Battery E
 | ![Dashboard Table](assets/dashboard_table.png) | ![Dashboard Map](assets/dashboard_map.png) |
 
 ---
-Markdown
-## 🛠️ Installation & Setup
-
-Navigate into the directory:
-```bash
-cd berlin_bess_optimizer
-Install the required dependencies:
-
-Bash
-pip install -r requirements.txt
-🖥️ Running the Dashboard
-Launch the Streamlit web application locally:
-
-Bash
-python3 -m streamlit run app.py
-Open the provided local URL in your browser to interact with the dashboard, adjust market parameters via the sidebar, and analyze optimal BESS allocations across Berlin.
----
 ## 📦 Tech Stack & Features Comparison
 
 | Component | Technology | Primary Function |
