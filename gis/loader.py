@@ -7,7 +7,6 @@ def load_berlin_districts():
     Loads or generates Berlin districts geospatial data with congestion and spatial weights
     for BESS optimization.
     """
-    # Sample data representing Berlin districts/neighborhoods with spatial & grid parameters
     data = {
         'neighborhood': [
             'Mitte', 'Charlottenburg', 'Kreuzberg', 'Prenzlauer Berg', 
@@ -21,10 +20,8 @@ def load_berlin_districts():
         'congestion_risk': ['High', 'Medium', 'High', 'Low', 'High', 'Medium', 'Low', 'Low', 'Medium']
     }
     
-    # Creating a dummy GeoDataFrame with bounding geometries for Berlin
     df = pd.DataFrame(data)
     
-    # Generate approximate polygon geometries for demonstration / spatial handling
     base_lon, base_lat = 13.405, 52.52
     geometries = []
     for i in range(len(df)):
