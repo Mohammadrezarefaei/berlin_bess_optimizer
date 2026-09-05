@@ -1,7 +1,8 @@
-Markdown
-# Berlin BESS Siting & Optimization Dashboard
+Markdown# Berlin BESS Siting & Optimization Dashboard
 
 A geospatial optimization and capacity sizing framework for grid-scale Battery Energy Storage Systems (BESS) across Berlin districts. This project combines spatial data analysis, linear programming optimization, and an interactive web dashboard to evaluate grid congestion risks and maximize arbitrage profitability.
+
+🌐 **Live Demo:** [View Streamlit Dashboard](https://scaling-zebra-wrvj49vjxwrq2gx77-8501.app.github.dev/)
 
 ---
 
@@ -13,40 +14,27 @@ A geospatial optimization and capacity sizing framework for grid-scale Battery E
 
 ---
 
+## 📊 Dashboard Preview
+
+| Optimization Results & Table | Interactive Folium Map |
+| :---: | :---: |
+| ![Dashboard Table](assets/dashboard_table.png) | ![Dashboard Map](assets/dashboard_map.png) |
+
+---
+
 ## 🛠️ Installation & Setup
 
 1. Clone the repository:
    ```bash
-   git clone [https://github.com/your-username/berlin_bess_optimizer.git](https://github.com/your-username/berlin_bess_optimizer.git)
+   git clone [https://github.com/Mohammadrezarefaei/berlin_bess_optimizer.git](https://github.com/Mohammadrezarefaei/berlin_bess_optimizer.git)
    cd berlin_bess_optimizer
-Install the required dependencies:
-
-Bash
-pip install -r requirements.txt
-🖥️ Running the Dashboard
-Launch the Streamlit web application locally:
-
-Bash
-python3 -m streamlit run app.py
-Open the provided local URL in your browser to interact with the dashboard, adjust market parameters via the sidebar, and analyze optimal BESS allocations across Berlin.
-
-📦 Tech Stack
-Python 3.12
-
-Streamlit & Streamlit-Folium (Dashboard & Mapping)
-
-GeoPandas & Shapely (Spatial Data Processing)
-
-PuLP (Linear Optimization)
-
-Pandas & NumPy (Data Manipulation)
----
-
-## 📂 Project Structure
-
-```text
-berlin_bess_optimizer/
+Install the required dependencies:Bashpip install -r requirements.txt
+🖥️ Running the DashboardLaunch the Streamlit web application locally:Bashpython3 -m streamlit run app.py
+Open the provided local URL in your browser to interact with the dashboard, adjust market parameters via the sidebar, and analyze optimal BESS allocations across Berlin.📦 Tech Stack & Features ComparisonComponentTechnologyPrimary FunctionGIS & SpatialGeoPandas, ShapelyBerlin district boundaries & spatial modelingOptimizationPuLP (Linear Programming)Siting, sizing ($MW$/$MWh$), & arbitrage maximizationDashboardStreamlit, Streamlit-FoliumWeb UI, interactive maps, & parameter slidersData ProcessingPandas, NumPyMarket spread calculations & results aggregation📂 Project StructurePlaintextberlin_bess_optimizer/
 │
+├── assets/                  # Dashboard screenshots and visual media
+│   ├── dashboard_map.png
+│   └── dashboard_table.png
 ├── data/                    # Shapefiles and market data directory
 ├── gis/                     # Spatial data loading and processing modules
 │   └── loader.py            # Generates Berlin district boundaries and grid parameters
