@@ -30,11 +30,16 @@ A geospatial optimization and capacity sizing framework for grid-scale Battery E
    cd berlin_bess_optimizer
 Install the required dependencies:Bashpip install -r requirements.txt
 🖥️ Running the DashboardLaunch the Streamlit web application locally:Bashpython3 -m streamlit run app.py
-Open the provided local URL in your browser to interact with the dashboard, adjust market parameters via the sidebar, and analyze optimal BESS allocations across Berlin.📦 Tech Stack & Features ComparisonComponentTechnologyPrimary FunctionGIS & SpatialGeoPandas, ShapelyBerlin district boundaries & spatial modelingOptimizationPuLP (Linear Programming)Siting, sizing ($MW$/$MWh$), & arbitrage maximizationDashboardStreamlit, Streamlit-FoliumWeb UI, interactive maps, & parameter slidersData ProcessingPandas, NumPyMarket spread calculations & results aggregation📂 Project StructurePlaintextberlin_bess_optimizer/
+Open the provided local URL in your browser to interact with the dashboard, adjust market parameters via the sidebar, and analyze optimal BESS allocations across Berlin.
+📦 Tech Stack & Features ComparisonComponentTechnologyPrimary FunctionGIS & SpatialGeoPandas, ShapelyBerlin district boundaries & spatial modelingOptimizationPuLP (Linear Programming)Siting, sizing ($MW$/$MWh$), & arbitrage maximizationDashboardStreamlit, Streamlit-FoliumWeb UI, interactive maps, & parameter slidersData ProcessingPandas, NumPyMarket spread calculations & results aggregation
+
+---
+
+## 📂 Project Structure
+
+```text
+berlin_bess_optimizer/
 │
-├── assets/                  # Dashboard screenshots and visual media
-│   ├── dashboard_map.png
-│   └── dashboard_table.png
 ├── data/                    # Shapefiles and market data directory
 ├── gis/                     # Spatial data loading and processing modules
 │   └── loader.py            # Generates Berlin district boundaries and grid parameters
