@@ -87,8 +87,13 @@ st.download_button(
 
 st.subheader("🗺️ Interactive District Map & Net Profit Potential in Berlin")
 
-# Removed CartoDB tiles parameter to use standard OpenStreetMap without API key requirements
-m = folium.Map(location=[52.52, 13.405], zoom_start=11)
+# Using standard OpenStreetMap via explicit tiles URL endpoint to prevent API key prompts
+m = folium.Map(
+    location=[52.52, 13.405], 
+    zoom_start=11, 
+    tiles="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    attr="© OpenStreetMap contributors"
+)
 
 for idx, row in df_results.iterrows():
     lat_offset = (idx % 3 - 1) * 0.03
