@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from gis.loader import load_berlin_districts
 from optimization.optimizer import optimize_bess
+from optimization.forecaster import predict_market_multiplier
 from streamlit_folium import st_folium
 import folium
 
@@ -12,11 +13,9 @@ st.set_page_config(
     layout="wide"
 )
 
-# Dashboard Title & Description
 st.title("⚡ Berlin BESS Location & Optimization Dashboard")
 st.markdown("Geospatial optimization and capacity sizing framework for grid-scale Battery Energy Storage Systems (BESS) across Berlin districts.")
 
-# Sidebar Parameters for Market & Battery Parameters
 st.sidebar.header("Market & Battery Parameters")
 
 price_spread = st.sidebar.slider(
@@ -24,8 +23,7 @@ price_spread = st.sidebar.slider(
     min_value=30.0,
     max_value=150.0,
     value=90.0,
-    step=5.0,
-    help="Average daily wholesale electricity price spread."
+    step=5.0
 )
 
 annual_cycles = st.sidebar.number_input(
@@ -33,36 +31,40 @@ annual_cycles = st.sidebar.number_input(
     min_value=100,
     max_value=700,
     value=365,
-    step=10,
-    help="Number of full equivalent charge-discharge cycles per year."
+    step=10
 )
 
-# Price Scenario / Stress Testing Multiplier
-st.sidebar.subheader("📉 Market Stress Testing")
-price_multiplier = st.sidebar.slider(
-    "Price Scenario Multiplier",
-    min_value=0.5,
-    max_value=2.0,
-    value=1.0,
-    step=0.1,
-    help="Simulate bearish (0.5x) or bullish (2.0x) market price conditions."
-)
+# --- NEW: ML Forecasting Mode Toggle & Sliders ---
+st.sidebar.subheader("🤖 ML Market Forecasting")
+use_ml_forecast = st.sidebar.checkbox("Enable ML Price Prediction", value=False, help="Use Random Forest model to predict market price multiplier based on grid conditions.")
 
-# Battery Degradation & Replacement Cost Parameter
+if use_ml_forecast:
+    ren_factor = st.sidebar.slider("Renewable Penetration Index", 0.0, 1.0, 0.6, 0.1)
+    demand_factor = st.sidebar.slider("Grid Demand Index", 0.0, 1.0, 0.5, 0.1)
+    vol_factor = st.sidebar.slider("Market Volatility Index", 0.0, 1.0, 0.7, 0.1)
+    
+    price_multiplier = predict_market_multiplier(ren_factor, demand_factor, vol_factor)
+    st.sidebar.success(f"🎯 ML Predicted Multiplier: **{price_multiplier}x**")
+else:
+    price_multiplier = st.sidebar.slider(
+        "Price Scenario Multiplier",
+        min_value=0.5,
+        max_value=2.0,
+        value=1.0,
+        step=0.1
+    )
+
 st.sidebar.subheader("🔋 Battery Degradation Model")
 deg_cost_rate = st.sidebar.slider(
     "Degradation Cost (EUR / MWh-cycle)",
     min_value=0.5,
     max_value=5.0,
     value=1.5,
-    step=0.25,
-    help="Cost rate accounting for cell wear, capacity fade, and replacement reserve fund per MWh throughput cycle."
+    step=0.25
 )
 
-# Load GIS data for Berlin districts
 df_districts = load_berlin_districts()
 
-# Run Optimization with Degradation Parameters
 results = optimize_bess(
     df_districts, 
     price_spread=price_spread, 
@@ -72,23 +74,18 @@ results = optimize_bess(
 )
 df_results = pd.DataFrame(results)
 
-# Display Results Section
 st.subheader("📊 Optimization & Net Profitability Results by Neighborhood")
-if price_multiplier != 1.0 or deg_cost_rate != 1.5:
-    st.info(f"ℹ️ Active Scenario -> Price Multiplier: **{price_multiplier}x** | Degradation Rate: **€{deg_cost_rate}/MWh-cycle**")
+st.info(f"ℹ️ Active Multiplier: **{price_multiplier}x** {'(ML Forecasted)' if use_ml_forecast else '(Manual)'} | Degradation Rate: **€{deg_cost_rate}/MWh-cycle**")
 
 st.dataframe(df_results, use_container_width=True)
 
-# --- NEW: Export / Download Report Section ---
 st.download_button(
     label="📥 Download Optimization Report (CSV)",
     data=df_results.to_csv(index=False).encode('utf-8'),
     file_name="berlin_bess_optimization_report.csv",
-    mime="text/csv",
-    help="Export current optimization results, capacities, and net financial projections as a CSV file."
+    mime="text/csv"
 )
 
-# Interactive Map Section
 st.subheader("🗺️ Interactive District Map & Net Profit Potential in Berlin")
 
 m = folium.Map(location=[52.52, 13.405], zoom_start=11, tiles="CartoDB positron")
