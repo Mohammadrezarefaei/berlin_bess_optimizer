@@ -30,7 +30,7 @@ st.dataframe(df_results, use_container_width=True)
 
 st.download_button("📥 Download CSV", df_results.to_csv(index=False).encode('utf-8'), "report.csv", "text/csv")
 
-st.subheader("🗺️ Interactive District Map (Hover for Details)")
+st.subheader("🗺️ Interactive District Map (Hover over circles)")
 
 map_data = []
 for idx, row in df_results.iterrows():
@@ -50,8 +50,8 @@ layer = pdk.Layer(
     "ScatterplotLayer",
     data=df_map,
     get_position=["lon", "lat"],
-    get_radius="optimal_bess_mw * 300",
-    get_fill_color=[0, 128, 128, 180],
+    get_radius=1200,
+    get_fill_color=[0, 150, 150, 220],
     pickable=True,
     auto_highlight=True,
 )
@@ -61,7 +61,11 @@ view_state = pdk.ViewState(latitude=52.52, longitude=13.405, zoom=10, pitch=0)
 r = pdk.Deck(
     layers=[layer],
     initial_view_state=view_state,
-    tooltip={"html": "<b>Neighborhood:</b> {neighborhood}<br/><b>Net Profit:</b> €{net_annual_profit_eur:,}"}
+    map_style="light",
+    tooltip={
+        "html": "<b>Neighborhood:</b> {neighborhood}<br/><b>Capacity:</b> {optimal_bess_mw} MW<br/><b>Net Profit:</b> €{net_annual_profit_eur:,}",
+        "style": {"backgroundColor": "steelblue", "color": "white"}
+    }
 )
 
 st.pydeck_chart(r)
