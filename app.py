@@ -1,3 +1,4 @@
+cat << 'EOF' > app.py
 import streamlit as st
 import pandas as pd
 from gis.loader import load_berlin_districts
@@ -6,7 +7,6 @@ from optimization.forecaster import predict_market_multiplier
 from streamlit_folium import st_folium
 import folium
 
-# Page Configuration
 st.set_page_config(
     page_title="Berlin BESS Siting & Optimization Dashboard",
     page_icon="⚡",
@@ -34,9 +34,8 @@ annual_cycles = st.sidebar.number_input(
     step=10
 )
 
-# --- NEW: ML Forecasting Mode Toggle & Sliders ---
 st.sidebar.subheader("🤖 ML Market Forecasting")
-use_ml_forecast = st.sidebar.checkbox("Enable ML Price Prediction", value=False, help="Use Random Forest model to predict market price multiplier based on grid conditions.")
+use_ml_forecast = st.sidebar.checkbox("Enable ML Price Prediction", value=False)
 
 if use_ml_forecast:
     ren_factor = st.sidebar.slider("Renewable Penetration Index", 0.0, 1.0, 0.6, 0.1)
@@ -88,7 +87,8 @@ st.download_button(
 
 st.subheader("🗺️ Interactive District Map & Net Profit Potential in Berlin")
 
-m = folium.Map(location=[52.52, 13.405], zoom_start=11, tiles="CartoDB positron")
+# Removed CartoDB tiles parameter to use standard OpenStreetMap without API key requirements
+m = folium.Map(location=[52.52, 13.405], zoom_start=11)
 
 for idx, row in df_results.iterrows():
     lat_offset = (idx % 3 - 1) * 0.03
@@ -106,3 +106,4 @@ for idx, row in df_results.iterrows():
     ).add_to(m)
 
 st_folium(m, width=1200, height=500)
+EOF
