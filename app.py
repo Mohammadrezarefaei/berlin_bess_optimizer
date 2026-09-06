@@ -63,7 +63,7 @@ col3.metric("Total Net Annual Profit", f"€{df_results['net_annual_profit_eur']
 
 # Layout: Map and Table side by side
 st.subheader("Geospatial & Siting Results")
-m = folium.Map(location=[52.52, 13.405], zoom_start=11, tiles="CartoDB positron")
+m = folium.Map(location=[52.52, 13.405], zoom_start=11, tiles="OpenStreetMap")
 
 for idx, row in gdf_districts.iterrows():
     match_res = next((item for item in optimization_results if item['neighborhood'] == row['neighborhood']), {})
