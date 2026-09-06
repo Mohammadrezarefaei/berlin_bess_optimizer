@@ -1,3 +1,5 @@
+import os
+from PIL import Image
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -8,6 +10,26 @@ st.set_page_config(
 
 st.title("BESS Operation & Reserve Allocation Dashboard")
 
+# نمایش تصاویر و نقشه‌های موجود در پوشه assets
+st.subheader("GIS & Spatial Analysis")
+map_path = "assets/dashboard_map.png"
+if os.path.exists(map_path):
+    st.image(
+        Image.open(map_path),
+        caption="GIS Spatial & Site Map",
+        use_container_width=True,
+    )
+
+st.subheader("Optimization & Financial Tables")
+table_path = "assets/dashboard_table.png"
+if os.path.exists(table_path):
+    st.image(
+        Image.open(table_path),
+        caption="Model Results & Table",
+        use_container_width=True,
+    )
+
+# نمودارهای تحلیل بازار و باتری
 hours = np.arange(24)
 np.random.seed(42)
 
@@ -26,7 +48,7 @@ df = pd.DataFrame(
         "Hour": hours,
         "Market Price": price,
         "Net Power Flow (Discharge - Charge)": net_power,
-        "FCR Reserve Headroom": fcr_headroom,
+        "Fcr Reserve Headroom": fcr_headroom,
     }
 )
 
@@ -37,4 +59,4 @@ st.subheader("Net Power Flow (MW)")
 st.line_chart(df.set_index("Hour")["Net Power Flow (Discharge - Charge)"])
 
 st.subheader("Fcr Reserve Headroom (MW)")
-st.line_chart(df.set_index("Hour")["FCR Reserve Headroom"])
+st.line_chart(df.set_index("Hour")["Fcr Reserve Headroom"])
