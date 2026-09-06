@@ -3,7 +3,6 @@ Markdown# Berlin BESS Siting & Optimization Dashboard
 A geospatial optimization and capacity sizing framework for grid-scale Battery Energy Storage Systems (BESS) across Berlin districts. This project combines spatial data analysis, linear programming optimization, and an interactive web dashboard to evaluate grid congestion risks and maximize arbitrage profitability.
 
 🌐 **Live Demo:** [View Streamlit Dashboard](https://berlinbeappptimizer-22kxuwdrbbf5ntl3kpwvsw.streamlit.app/)  
-📂 **GitHub Repository:** [View on GitHub](https://github.com/Mohammadrezarefaei/berlin-bess-optimizer)
 
 ---
 
