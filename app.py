@@ -36,5 +36,5 @@ st.line_chart(df.set_index("Hour")["Market Price"])
 st.subheader("Net Power Flow (MW)")
 st.line_chart(df.set_index("Hour")["Net Power Flow (Discharge - Charge)"])
 
-st.subheader("FCR Reserve Headroom (MW)")
+st.subheader("Fcr Reserve Headroom (MW)")
 st.line_chart(df.set_index("Hour")["FCR Reserve Headroom"])
