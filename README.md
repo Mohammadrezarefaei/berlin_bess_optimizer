@@ -1,4 +1,4 @@
-#Berlin BESS Siting & Optimization Dashboard
+Berlin BESS Siting & Optimization Dashboard
 
 A geospatial optimization and capacity sizing framework for grid-scale Battery Energy Storage Systems (BESS) across Berlin districts. This project combines spatial data analysis, linear programming optimization, and an interactive web dashboard to evaluate grid congestion risks and maximize arbitrage profitability.
 
